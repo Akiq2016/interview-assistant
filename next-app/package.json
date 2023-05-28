@@ -13,6 +13,7 @@
     "@types/pdf-parse": "^1.1.1",
     "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",
+    "@types/uuid": "^9.0.1",
     "autoprefixer": "10.4.14",
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.4",
@@ -25,6 +26,7 @@
     "react-markdown": "^8.0.7",
     "redis": "^4.6.6",
     "tailwindcss": "3.3.2",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "uuid": "^9.0.0"
   }
 }

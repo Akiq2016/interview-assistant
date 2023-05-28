@@ -6,12 +6,14 @@ import styles from "@/styles/Home.module.css";
 import { InterviewReqBody, Message } from "@/types/interview";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import { v4 as uuidv4 } from "uuid";
 import LoadingDots from "@/components/LoadingDots";
 import {
   PRECONDITION_CONFIG,
   QUESTION_COUNT,
   ROUNDS_FOR_EACH_QUESTION,
 } from "@/constants/interviewConfig";
+import { INTERVIEW_ID_KEY } from "@/constants/storage";
 
 /**
  * todo:
@@ -25,6 +27,9 @@ export default function Home() {
   const [messageList, setMessageList] = useState<Partial<Message>[]>([]);
   const [pdfContent, setPdfContent] = useState<File>();
 
+  const interviewIdRef = useRef<string>(
+    sessionStorage.getItem(INTERVIEW_ID_KEY)!
+  );
   const preConditionFormRef = useRef<HTMLFormElement>(null);
   const resumeContentRef = useRef<string>("");
   const messageListRef = useRef<HTMLDivElement>(null);
@@ -99,66 +104,82 @@ export default function Home() {
   };
 
   /** Handle form submission */
-  const handleSubmit = useCallback(async (e: any) => {
-    e?.preventDefault();
-    setError(null);
+  const handleSubmit = useCallback(
+    async (e?: any) => {
+      e?.preventDefault();
+      setError(null);
 
-    let query: string | null = null;
-    if (textAreaRef.current?.value) {
-      query = textAreaRef.current.value;
-    }
-
-    const data: Partial<InterviewReqBody> = {};
-
-    if (startInterview) {
-      if (!query) {
-        alert("Please input a question");
-        return;
+      let query: string | null = null;
+      if (textAreaRef.current?.value) {
+        query = textAreaRef.current.value;
       }
-      data.human = query.trim();
-      addDataToStack(data.human, "userMessage");
-      if (textAreaRef.current) {
-        textAreaRef.current.value = "";
-      }
-    } else {
-      data.options = getCandidateInfos();
-    }
 
-    setLoading(true);
+      const data: Partial<InterviewReqBody> = {};
 
-    try {
-      const body: InterviewReqBody = {
-        interviewStep,
-        ...data,
-      };
-      const response = await fetch("/api/interview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const { error, text: answer } = await response.json();
-
-      if (error) {
-        setError(error);
+      if (startInterview) {
+        if (!query) {
+          alert("Please input a question");
+          return;
+        }
+        data.human = query.trim();
+        addDataToStack(data.human, "userMessage");
+        if (textAreaRef.current) {
+          textAreaRef.current.value = "";
+        }
       } else {
-        setStartInterview(true);
-        addDataToStack(answer, "apiMessage");
-        updateInterviewStatus();
+        data.options = getCandidateInfos();
       }
 
-      setLoading(false);
+      setLoading(true);
 
-      /** scroll to bottom */
-      messageListRef.current?.scrollTo(0, messageListRef.current.scrollHeight);
-    } catch (error) {
-      setLoading(false);
-      setError("An error occurred while fetching the data. Please try again.");
-    }
-  }, [updateInterviewStatus, startInterview, interviewStep]);
+      try {
+        const body: InterviewReqBody = {
+          interviewStep,
+          ...data,
+        };
+        const response = await fetch("/api/interview", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Interview-Id": interviewIdRef.current,
+          },
+          body: JSON.stringify(body),
+        });
+
+        const { error, text: answer } = await response.json();
+
+        if (error) {
+          setError(error);
+        } else {
+          setStartInterview(true);
+          addDataToStack(answer, "apiMessage");
+          updateInterviewStatus();
+        }
+
+        setLoading(false);
+
+        /** scroll to bottom */
+        messageListRef.current?.scrollTo(
+          0,
+          messageListRef.current.scrollHeight
+        );
+      } catch (error) {
+        setLoading(false);
+        setError(
+          "An error occurred while fetching the data. Please try again."
+        );
+      }
+    },
+    [updateInterviewStatus, startInterview, interviewStep]
+  );
 
   useEffect(() => {
     textAreaRef.current?.focus();
+
+    if (!sessionStorage.getItem(INTERVIEW_ID_KEY)) {
+      interviewIdRef.current = uuidv4();
+      sessionStorage.setItem(INTERVIEW_ID_KEY, interviewIdRef.current);
+    }
   }, []);
 
   /** Debug */

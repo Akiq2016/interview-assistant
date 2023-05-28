@@ -9,21 +9,8 @@ import { InterviewReqBody } from "@/types/interview";
 import { userDefaultKickOff } from "@/prompts/precondition";
 
 const chat = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 1 });
-
 const client = createClient({
-  url: "redis://localhost:6379",
-});
-
-const redisMemory = new BufferMemory({
-  chatHistory: new RedisChatMessageHistory({
-    sessionId: new Date().toISOString(),
-    sessionTTL: 300,
-    client,
-  }),
-});
-const chain = new ConversationChain({
-  memory: redisMemory,
-  llm: chat,
+  url: process.env.REDIS_URL ?? "redis://localhost:6379",
 });
 
 const tryToKickOffInterview = (
@@ -55,6 +42,17 @@ export async function POST(request: Request) {
     await request.json();
 
   try {
+    const chain = new ConversationChain({
+      memory: new BufferMemory({
+        chatHistory: new RedisChatMessageHistory({
+          sessionId: request.headers.get("Interview-Id") || new Date().toISOString(),
+          sessionTTL: 300,
+          client,
+        }),
+      }),
+      llm: chat,
+    });
+
     const { response } = await chain.call({
       input: tryToKickOffInterview(interviewStep, options)
         ? getCandidateInfos(options)

@@ -1,0 +1,1 @@
+export const INTERVIEW_ID_KEY = "interviewId";
