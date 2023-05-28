@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Blob } from "node:buffer";
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse";
 
 const parseForm = async (req: Request) => {
   return new Promise<Record<string, Buffer>>(async (resolve) => {
