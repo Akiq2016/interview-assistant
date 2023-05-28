@@ -99,7 +99,8 @@ export default function Home() {
   };
 
   /** Handle form submission */
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (e: any) => {
+    e?.preventDefault();
     setError(null);
 
     let query: string | null = null;
@@ -124,7 +125,6 @@ export default function Home() {
     }
 
     setLoading(true);
-    setStartInterview(true);
 
     try {
       const body: InterviewReqBody = {
@@ -142,6 +142,7 @@ export default function Home() {
       if (error) {
         setError(error);
       } else {
+        setStartInterview(true);
         addDataToStack(answer, "apiMessage");
         updateInterviewStatus();
       }
