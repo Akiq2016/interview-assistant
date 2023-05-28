@@ -3,11 +3,10 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import "@/styles/base.css";
 import styles from "@/styles/Home.module.css";
-import { Message } from "@/types/chat";
+import { InterviewReqBody, Message } from "@/types/interview";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import LoadingDots from "@/components/LoadingDots";
-import { ChatReqBody } from "./api/chat";
 import {
   PRECONDITION_CONFIG,
   QUESTION_COUNT,
@@ -74,7 +73,7 @@ export default function Home() {
       if (pdfContent) {
         const formData = new FormData();
         formData.append("file", pdfContent);
-        const response = await fetch("/api/extract", {
+        const response = await fetch("/api/pdf/extract", {
           method: "POST",
           body: formData,
         });
@@ -108,7 +107,7 @@ export default function Home() {
       query = textAreaRef.current.value;
     }
 
-    const data: Partial<ChatReqBody> = {};
+    const data: Partial<InterviewReqBody> = {};
 
     if (startInterview) {
       if (!query) {
@@ -128,11 +127,11 @@ export default function Home() {
     setStartInterview(true);
 
     try {
-      const body: ChatReqBody = {
+      const body: InterviewReqBody = {
         interviewStep,
         ...data,
       };
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
