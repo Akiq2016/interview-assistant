@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "redis";
-import { ChatOpenAI } from "langchain/chat_models/openai";
+// import { ChatOpenAI } from "langchain/chat_models/openai";
+import { ChatAnthropic } from "langchain/chat_models/anthropic";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { RedisChatMessageHistory } from "langchain/stores/message/redis";
@@ -8,7 +9,12 @@ import { RedisChatMessageHistory } from "langchain/stores/message/redis";
 import { InterviewReqBody } from "@/types/interview";
 import { userDefaultKickOff } from "@/prompts/precondition";
 
-const chat = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 1 });
+const chat = new ChatAnthropic({
+  modelName: "claude-instant-v1",
+  temperature: 1,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+});
+// const chat = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 1 });
 const client = createClient({
   url: process.env.REDIS_URL ?? "redis://localhost:6379",
 });
@@ -45,7 +51,8 @@ export async function POST(request: Request) {
     const chain = new ConversationChain({
       memory: new BufferMemory({
         chatHistory: new RedisChatMessageHistory({
-          sessionId: request.headers.get("Interview-Id") || new Date().toISOString(),
+          sessionId:
+            request.headers.get("Interview-Id") || new Date().toISOString(),
           sessionTTL: 300,
           client,
         }),
