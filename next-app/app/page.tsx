@@ -83,9 +83,9 @@ export default function Home() {
           body: formData,
         });
 
-        const { content } = await response.json();
-        resumeContentRef.current = content;
-        console.log("response", content);
+        const { text } = await response.json();
+        resumeContentRef.current = text;
+        console.log("response", text);
       }
     })();
   }, [pdfContent]);
