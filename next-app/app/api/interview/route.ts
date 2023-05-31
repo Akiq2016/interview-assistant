@@ -15,7 +15,15 @@ import {
   PromptTemplate,
 } from "langchain/prompts";
 import { AIChatMessage } from "langchain/schema";
-import { QUESTION_COUNT, ROUNDS_FOR_EACH_QUESTION } from "@/constants/interviewConfig";
+import {
+  QUESTION_COUNT,
+  ROUNDS_FOR_EACH_QUESTION,
+} from "@/constants/interviewConfig";
+import {
+  startFollowUpQuestion,
+  startNextQuestion,
+  userConsent,
+} from "@/prompts/followUp";
 
 const chat = new ChatAnthropic({
   modelName: "claude-instant-v1",
@@ -38,21 +46,21 @@ const tryToKickOffInterview = (
   );
 };
 
-
 const checkCanAskNextQuestion = (interviewStep: [number, number]) => {
   const [questionIndex] = interviewStep;
   return questionIndex <= QUESTION_COUNT - 1;
-}
+};
 
 const checkCanAskNextRound = (interviewStep: [number, number]) => {
   const [, roundIndex] = interviewStep;
   return roundIndex <= ROUNDS_FOR_EACH_QUESTION - 1;
-}
+};
 
 const getCandidateInfos = (options: InterviewReqBody["options"]) => {
   const { jobTitle, workingYear, countryOrRegion, resume } = options || {};
   return (
-    userDefaultKickOff +
+    `${aiRole} ${askingArt}
+    ${userDefaultKickOff}` +
     (jobTitle ? `I’m looking to find a ${jobTitle} role. ` : "") +
     (workingYear ? `I have ${workingYear} years of working experience. ` : "") +
     (countryOrRegion ? `My preferred location is ${countryOrRegion}.` : "") +
@@ -66,39 +74,41 @@ export async function POST(request: Request) {
   const { human, options, interviewStep }: InterviewReqBody =
     await request.json();
 
-  const template = "What is a good name for a company that makes {product}?";
-  const prompt = new PromptTemplate({ template, inputVariables: ["product"] });
-  const aiMessagePrompt = new AIMessagePromptTemplate(prompt);
   try {
-    const chain = new ConversationChain({
-      memory: new BufferMemory({
-        chatHistory: new RedisChatMessageHistory({
-          sessionId:
-            request.headers.get("Interview-Id") || new Date().toISOString(),
-          sessionTTL: 300,
-          client,
-        }),
+    const bufferMemory = new BufferMemory({
+      inputKey: "humanInput",
+      returnMessages: true,
+      chatHistory: new RedisChatMessageHistory({
+        sessionId:
+          request.headers.get("Interview-Id") || new Date().toISOString(),
+        sessionTTL: 300,
+        client,
       }),
+    });
+
+    const chain = new ConversationChain({
+      memory: bufferMemory,
       prompt: ChatPromptTemplate.fromPromptMessages([
-        SystemMessagePromptTemplate.fromTemplate(`${aiRole} ${askingArt}`),
-        aiMessagePrompt,
-        HumanMessagePromptTemplate.fromTemplate('{input}'),
+        HumanMessagePromptTemplate.fromTemplate("{humanInput}"),
       ]),
       llm: chat,
     });
 
-    // // Adding an AI message to the memory
-    // const aiMessage = new AIChatMessage("This is an AI message.");
-    // const res = await chat.call([aiMessage]);
-    // console.log('aki: ', res);
-
-    const { response } = await chain.call({
-      input: tryToKickOffInterview(interviewStep, options)
-        ? getCandidateInfos(options)
-        : human,
-      product: "cars",
-    });
-    return NextResponse.json({ error: "", text: response });
+    let res: string;
+    if (tryToKickOffInterview(interviewStep, options)) {
+      res = (await chain.call({ humanInput: getCandidateInfos(options) }))
+        ?.response;
+    } else {
+      let humanInput = `This is my answer: <answer>${human}</answer>. `;
+      if (checkCanAskNextRound(interviewStep)) {
+        humanInput += startFollowUpQuestion;
+      } else if (checkCanAskNextQuestion(interviewStep)) {
+        humanInput += startNextQuestion;
+      }
+      humanInput += `(REMEMBER: <tip>${askingArt}</tip>)`;
+      res = (await chain.call({ humanInput }))?.response;
+    }
+    return NextResponse.json({ error: "", text: res });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error }, { status: 500 });
