@@ -3,7 +3,14 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import "@/styles/base.css";
 import styles from "@/styles/Home.module.css";
-import { InterviewReqBody, Message } from "@/types/interview";
+import {
+  InterviewReqBody,
+  InterviewReqBodyEnd,
+  InterviewReqBodyInterviewing,
+  InterviewReqBodyStart,
+  InterviewStatus,
+  Message,
+} from "@/types/interview";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { v4 as uuidv4 } from "uuid";
@@ -20,7 +27,9 @@ import { INTERVIEW_ID_KEY } from "@/constants/storage";
  * preconditions required | optional
  */
 export default function Home() {
-  const [startInterview, setStartInterview] = useState<boolean>(false);
+  const [interviewStatus, setInterviewStatus] = useState<InterviewStatus>(
+    InterviewStatus["start"]
+  );
   const [interviewStep, setInterviewStep] = useState<[number, number]>([1, 0]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,17 +55,23 @@ export default function Home() {
   }, [interviewStep]);
 
   const updateInterviewStatus = useCallback(() => {
-    const [questionIndex, roundIndex] = interviewStep;
     if (checkCanAskNextRound()) {
-      setInterviewStep([questionIndex, roundIndex + 1]);
+      setInterviewStep(([questionIndex, roundIndex]) => [
+        questionIndex,
+        roundIndex + 1,
+      ]);
     } else if (checkCanAskNextQuestion()) {
-      setInterviewStep([questionIndex + 1, 0]);
-    } else {
-      /** interview finished */
-      setStartInterview(false);
-      setInterviewStep([1, 0]);
+      setInterviewStep(([questionIndex]) => [questionIndex + 1, 0]);
     }
-  }, [checkCanAskNextQuestion, checkCanAskNextRound, interviewStep]);
+  }, [checkCanAskNextQuestion, checkCanAskNextRound]);
+
+  const resetInterview = () => {
+    setInterviewStatus(InterviewStatus["start"]);
+    setInterviewStep([1, 0]);
+    setError(null);
+    setMessageList([]);
+    setPdfContent(undefined);
+  };
 
   const getCandidateInfos = () => {
     if (preConditionFormRef.current) {
@@ -114,27 +129,41 @@ export default function Home() {
         query = textAreaRef.current.value;
       }
 
-      const data: Partial<InterviewReqBody> = {};
+      const data:
+        | InterviewReqBodyEnd
+        | InterviewReqBodyStart
+        | InterviewReqBodyInterviewing = {} as any;
 
-      if (startInterview) {
+      if (interviewStatus === InterviewStatus["interviewing"]) {
         if (!query) {
           alert("Please input a question");
           return;
         }
-        data.human = query.trim();
-        addDataToStack(data.human, "userMessage");
+
+        (data as InterviewReqBodyInterviewing).status = interviewStatus;
+        (data as InterviewReqBodyInterviewing).interviewStep = interviewStep;
+        (data as InterviewReqBodyInterviewing).human = query.trim();
+
+        addDataToStack(
+          (data as InterviewReqBodyInterviewing).human,
+          "userMessage"
+        );
+
         if (textAreaRef.current) {
           textAreaRef.current.value = "";
         }
+      } else if (interviewStatus === InterviewStatus["start"]) {
+        (data as InterviewReqBodyStart).status = interviewStatus;
+        (data as InterviewReqBodyInterviewing).interviewStep = interviewStep;
+        (data as InterviewReqBodyStart).options = getCandidateInfos();
       } else {
-        data.options = getCandidateInfos();
+        return;
       }
 
       setLoading(true);
 
       try {
         const body: InterviewReqBody = {
-          interviewStep,
           ...data,
         };
         const response = await fetch("/api/interview", {
@@ -146,12 +175,14 @@ export default function Home() {
           body: JSON.stringify(body),
         });
 
-        const { error, text: answer } = await response.json();
+        const { error, text: answer, end } = await response.json();
 
         if (error) {
           setError(error);
         } else {
-          setStartInterview(true);
+          end
+            ? setInterviewStatus(InterviewStatus["end"])
+            : setInterviewStatus(InterviewStatus["interviewing"]);
           addDataToStack(answer, "apiMessage");
           updateInterviewStatus();
         }
@@ -170,7 +201,7 @@ export default function Home() {
         );
       }
     },
-    [updateInterviewStatus, startInterview, interviewStep]
+    [updateInterviewStatus, interviewStatus, interviewStep]
   );
 
   useEffect(() => {
@@ -182,14 +213,6 @@ export default function Home() {
     }
   }, []);
 
-  /** Debug */
-  useEffect(() => {
-    if (startInterview) {
-      console.log("messageList", messageList);
-      console.log("interviewStep", interviewStep);
-    }
-  }, [messageList, startInterview, interviewStep]);
-
   const handleEnter = (e: any) => {
     if (e.key === "Enter") {
       handleSubmit();
@@ -200,7 +223,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      {startInterview ? (
+      {interviewStatus !== InterviewStatus["start"] ? (
         <>
           <div className={styles.cloud}>
             <div ref={messageListRef} className={styles.messagelist}>
@@ -251,41 +274,55 @@ export default function Home() {
               })}
             </div>
           </div>
+
           <div className={styles.center}>
             <div className={styles.cloudform}>
               <form onSubmit={handleSubmit}>
-                {/* aki todo: maxLength */}
-                <textarea
-                  disabled={loading}
-                  onKeyDown={handleEnter}
-                  ref={textAreaRef}
-                  autoFocus={false}
-                  rows={3}
-                  id="userInput"
-                  name="userInput"
-                  placeholder={loading ? "Waiting for response..." : ""}
-                  className={styles.textarea}
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={styles.generatebutton}
-                >
-                  {loading ? (
-                    <div className={styles.loadingwheel}>
-                      <LoadingDots color="#000" />
-                    </div>
-                  ) : (
-                    // Send icon SVG in input field
-                    <svg
-                      viewBox="0 0 20 20"
-                      className={styles.svgicon}
-                      xmlns="http://www.w3.org/2000/svg"
+                {interviewStatus === InterviewStatus["interviewing"] && (
+                  <>
+                    {/* aki todo: maxLength */}
+                    <textarea
+                      disabled={loading}
+                      onKeyDown={handleEnter}
+                      ref={textAreaRef}
+                      autoFocus={false}
+                      rows={3}
+                      id="userInput"
+                      name="userInput"
+                      placeholder={loading ? "Waiting for response..." : ""}
+                      className={styles.textarea}
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={styles.generatebutton}
                     >
-                      <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-                    </svg>
-                  )}
-                </button>
+                      {loading ? (
+                        <div className={styles.loadingwheel}>
+                          <LoadingDots color="#000" />
+                        </div>
+                      ) : (
+                        // Send icon SVG in input field
+                        <svg
+                          viewBox="0 0 20 20"
+                          className={styles.svgicon}
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+                        </svg>
+                      )}
+                    </button>
+                  </>
+                )}
+                {interviewStatus === InterviewStatus["end"] && (
+                  <button
+                    disabled={loading}
+                    onClick={resetInterview}
+                    className={styles.preConditionConfirm}
+                  >
+                    End
+                  </button>
+                )}
               </form>
             </div>
           </div>
@@ -328,7 +365,11 @@ export default function Home() {
               }}
             />
           </div>
-          <button type="submit" className={styles.preConditionConfirm}>
+          <button
+            disabled={loading}
+            type="submit"
+            className={styles.preConditionConfirm}
+          >
             Start Interview
           </button>
         </form>

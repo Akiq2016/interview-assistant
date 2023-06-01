@@ -4,8 +4,8 @@
  * there would be ${QUESTION_COUNT} questions,
  * and each question has ${ROUNDS_FOR_EACH_QUESTION} rounds.
  */
-export const QUESTION_COUNT = 2;
-export const ROUNDS_FOR_EACH_QUESTION = 3;
+export const QUESTION_COUNT = 1;
+export const ROUNDS_FOR_EACH_QUESTION = 2;
 export const PRECONDITION_CONFIG: {
   [key: string]: { name: string; type: string; [key: string]: unknown };
 } = {
