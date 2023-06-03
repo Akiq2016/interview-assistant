@@ -1,17 +1,12 @@
 services:
   redis:
-    image: bitnami/redis:latest
-    restart: unless-stopped
+    image: redis/redis-stack:latest
     ports:
-      - "6379:6379"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-  redisinsight:
-    image: redislabs/redisinsight:latest
+      - 6379:6379
+      - 8001:8001
     volumes:
-      - redisinsight:/db
-    ports:
-      - "8001:8001"
+      - redis-data:/data
 
 volumes:
-  redisinsight:
+  redis-data:
+    driver: local
