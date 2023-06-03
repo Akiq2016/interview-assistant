@@ -39,7 +39,7 @@ export default function Home() {
   const [pdfContent, setPdfContent] = useState<File>();
 
   const interviewIdRef = useRef<string>(
-    window.sessionStorage.getItem(INTERVIEW_ID_KEY)!
+    globalThis.sessionStorage?.getItem(INTERVIEW_ID_KEY)!
   );
   const preConditionFormRef = useRef<HTMLFormElement>(null);
   const resumeContentRef = useRef<string>("");
@@ -209,9 +209,9 @@ export default function Home() {
   useEffect(() => {
     textAreaRef.current?.focus();
 
-    if (!window.sessionStorage.getItem(INTERVIEW_ID_KEY)) {
+    if (!globalThis.sessionStorage?.getItem(INTERVIEW_ID_KEY)) {
       interviewIdRef.current = uuidv4();
-      window.sessionStorage.setItem(INTERVIEW_ID_KEY, interviewIdRef.current);
+      globalThis.sessionStorage?.setItem(INTERVIEW_ID_KEY, interviewIdRef.current);
     }
   }, []);
 
