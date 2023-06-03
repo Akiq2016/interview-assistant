@@ -1,16 +1,8 @@
+// animate icons
+export * from "./Loadbar";
+export * from "./LoadbarAlt";
+export * from "./LoadbarDoc";
 export * from "./LoadbarSound";
-export * from "./PlayButton";
-
-export const VoiceIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM13.2631 11.7368C13.2631 12.6105 12.5578 13.3158 11.6842 13.3158C10.8105 13.3158 10.1052 12.6105 10.1052 11.7368V8.57895C10.1052 7.70526 10.8105 7 11.6842 7C12.5578 7 13.2631 7.70526 13.2631 8.57895V11.7368ZM11.6842 8.05265C11.3947 8.05265 11.1579 8.28949 11.1579 8.57897V11.7369C11.1579 12.0263 11.3947 12.2632 11.6842 12.2632C11.9789 12.2632 12.2105 12.0316 12.2105 11.7369V8.57897C12.2105 8.28949 11.9736 8.05265 11.6842 8.05265ZM15.3684 11.7368H14.4737C14.4737 13.3158 13.1368 14.421 11.6842 14.421C10.2316 14.421 8.89474 13.3158 8.89474 11.7368H8C8 13.5316 9.43158 15.0158 11.1579 15.2737V17H12.2105V15.2737C13.9368 15.0158 15.3684 13.5316 15.3684 11.7368Z"
-      fill="#000000"
-    />
-  </svg>
-);
 
 export const SendIcon = () => (
   <svg
@@ -20,5 +12,57 @@ export const SendIcon = () => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+  </svg>
+);
+
+export const MicIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M9 4C9 2.34315 10.3431 1 12 1C13.6569 1 15 2.34315 15 4V12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12V4ZM13 4V12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4Z"
+      fill="currentColor"
+    />
+    <path
+      d="M18 12C18 14.973 15.8377 17.441 13 17.917V21H17V23H7V21H11V17.917C8.16229 17.441 6 14.973 6 12V9H8V12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12V9H18V12Z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+export const PlayButton = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21ZM12 23C18.0751 23 23 18.0751 23 12C23 5.92487 18.0751 1 12 1C5.92487 1 1 5.92487 1 12C1 18.0751 5.92487 23 12 23Z"
+      fill="currentColor"
+    />
+    <path d="M16 12L10 16.3301V7.66987L16 12Z" fill="currentColor" />
+  </svg>
+);
+
+export const PauseButton = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M9 9H11V15H9V9Z" fill="currentColor" />
+    <path d="M15 15H13V9H15V15Z" fill="currentColor" />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+      fill="currentColor"
+    />
   </svg>
 );

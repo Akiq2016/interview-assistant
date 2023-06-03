@@ -1,6 +1,14 @@
 import { useWhisper } from "@hzstudio/use-whisper";
 
-import { VoiceIcon, LoadbarSound } from "@/components/Icons";
+import {
+  MicIcon,
+  PlayButton,
+  PauseButton,
+  Loadbar,
+  LoadbarAlt,
+  LoadbarDoc,
+  LoadbarSound,
+} from "@/components/Icons";
 
 export default function VoiceInputBox() {
   const onTranscribe = async (blob: Blob) => {
@@ -26,16 +34,15 @@ export default function VoiceInputBox() {
     speaking,
     transcribing,
     transcript,
-    pauseRecording,
     startRecording,
+    pauseRecording,
     stopRecording,
   } = useWhisper({
     onTranscribe,
-    // removeSilence: true,
     streaming: true,
     timeSlice: 1000,
-    // nonStop: true,
-    // stopTimeout: 3000,
+    nonStop: true,
+    stopTimeout: 2000,
     whisperConfig: {
       language: "en",
     },
@@ -43,27 +50,50 @@ export default function VoiceInputBox() {
 
   return (
     <>
-      <div className="border rounded p-4 mt-4 flex w-full">
+      <div className="border rounded p-2 mt-4 flex w-full gap-2">
         <div className="flex-grow">
-          <p className="border border-dashed rounded p-2 m-2">
-            {transcript.text}
-          </p>
-          <div className="flex">
+          <p className="border border-dashed rounded p-2">{transcript.text}</p>
+          {/* <div className="flex">
             <p>Recording: {recording ? "..." : ""}</p>
             <p>Speaking: {speaking ? "..." : ""}</p>
             <p>Transcribing: {transcribing ? "..." : ""}</p>
-          </div>
+          </div> */}
         </div>
         <div className="flex flex-col gap-2">
-          <button className="border" onClick={() => startRecording()}>
-            {recording ? <LoadbarSound /> : <VoiceIcon />}
-          </button>
-          <button className="border" onClick={() => stopRecording()}>
-            Stop
-          </button>
-          {/* <button className="border" onClick={() => pauseRecording()}>Pause</button> */}
+          <IconButton onClick={() => startRecording()}>
+            {recording ? <LoadbarSound /> : <MicIcon />}
+          </IconButton>
+          <IconButton>
+            <Loadbar />
+          </IconButton>
+          <IconButton>
+            <LoadbarAlt />
+          </IconButton>
+          <IconButton>
+            <LoadbarDoc />
+          </IconButton>
+          <IconButton>
+            <LoadbarSound />
+          </IconButton>
+          <IconButton>
+            <PlayButton />
+          </IconButton>
+          <IconButton>
+            <PauseButton />
+          </IconButton>
         </div>
       </div>
     </>
   );
 }
+
+const IconButton = ({
+  children,
+  ...props
+}: {
+  children: React.ReactNode;
+} & React.ComponentPropsWithoutRef<"button">) => (
+  <button className="flex justify-center items-center w-8 h-8 p-1" {...props}>
+    {children}
+  </button>
+);
