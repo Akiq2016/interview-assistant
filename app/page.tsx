@@ -1,6 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import { v4 as uuidv4 } from "uuid";
+
 import "@/styles/base.css";
 import styles from "@/styles/Home.module.css";
 import {
@@ -11,10 +15,8 @@ import {
   InterviewStatus,
   Message,
 } from "@/types/interview";
-import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import { v4 as uuidv4 } from "uuid";
 import LoadingDots from "@/components/LoadingDots";
+import VoiceInputBox from "@/components/VoiceInputBox";
 import {
   PRECONDITION_CONFIG,
   QUESTION_COUNT,
@@ -379,6 +381,8 @@ export default function Home() {
           <p className="text-red-500">{error}</p>
         </div>
       )}
+
+      <VoiceInputBox />
     </main>
   );
 }
