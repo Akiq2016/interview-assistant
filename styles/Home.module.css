@@ -63,13 +63,6 @@
   right: 0.25rem;
 }
 
-.svgicon {
-  transform: rotate(90deg);
-  width: 1.2em;
-  height: 1.2em;
-  fill: currentColor;
-}
-
 .generatebutton:hover {
   background: #e4575726;
   border-radius: 0.2rem;
@@ -296,7 +289,7 @@
   visibility: hidden;
 }
 .customFileInput::before {
-  content: 'Select Resume File (pdf)';
+  content: "Select Resume File (pdf)";
   display: inline-block;
   padding: 6px 0;
   outline: none;
