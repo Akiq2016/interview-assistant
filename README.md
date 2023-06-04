@@ -11,7 +11,7 @@ This is an interview assistant application that helps interviewers to practice a
 
 ## Demo
 
-[Interview Assistant](https://interview-assistant-gycb0ok6g-akiq2016.vercel.app)
+[Interview Assistant](https://interview-assistant-akiq2016.vercel.app/)
 
 ## Try it by your self
 
