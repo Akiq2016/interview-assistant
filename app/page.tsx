@@ -228,14 +228,14 @@ export default function Home() {
                 let className;
                 if (message.type === "apiMessage") {
                   icon = (
-                    <div className="flex justify-center items-center w-10 h-10 mr-4">
+                    <div className="flex justify-center items-center shrink-0 w-10 h-10 mr-4">
                       <RobotIcon />
                     </div>
                   );
                   className = styles.apimessage;
                 } else {
                   icon = (
-                    <div className="flex justify-center items-center w-10 h-10 mr-4">
+                    <div className="flex justify-center items-center shrink-0 w-10 h-10 mr-4">
                       <UserIcon />
                     </div>
                   );
