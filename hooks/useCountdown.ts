@@ -10,16 +10,16 @@ const useCountdown = (
   { onEnd, autoStart }: UseCountdownOptions
 ) => {
   const [countDown, setCountDown] = useState(seconds);
-  const [isStart, setIsStart] = useState(autoStart);
+  const autoStartRef = useRef(autoStart);
 
   useEffect(() => {
-    if (!isStart) return;
+    if (!autoStartRef.current) return;
 
     const interval = setInterval(() => {
       setCountDown((prev) => {
         if (prev === 0) {
           onEnd?.();
-          setIsStart(false);
+          autoStartRef.current = false;
           clearInterval(interval);
           return 0;
         }
@@ -28,11 +28,11 @@ const useCountdown = (
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [seconds, onEnd, isStart]);
+  }, [seconds, onEnd]);
 
   const start = () => {
+    autoStartRef.current = true;
     setCountDown(seconds);
-    setIsStart(true);
   };
 
   const stop = () => {
@@ -41,7 +41,7 @@ const useCountdown = (
 
   return {
     countDown,
-    isStart,
+    isStart: autoStartRef.current,
     start,
     stop,
   };

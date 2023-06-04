@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useWhisper } from "@hzstudio/use-whisper";
 
-import {
-  MicIcon,
-  EarIcon,
-  SendIcon,
-  LoadbarDoc,
-  LoadbarSound,
-} from "@/components/Icons";
+import { MicIcon, EarIcon, SendIcon, LoadbarSound } from "@/components/Icons";
 import LoadingDots from "@/components/LoadingDots";
 import { useCountdown, format } from "@/hooks/useCountdown";
 import { useAutosizeTextArea } from "@/hooks/useAutosizeTextArea";
@@ -51,8 +45,8 @@ export default function VoiceInputBox({
     stopRecording,
   } = useWhisper({
     onTranscribe,
-    streaming: true,
-    timeSlice: 2000,
+    // streaming: true,
+    // timeSlice: 2000,
     nonStop: true,
     stopTimeout: 2500,
     whisperConfig: {
@@ -61,7 +55,7 @@ export default function VoiceInputBox({
   });
 
   useEffect(() => {
-    setValue(transcript.text ?? "");
+    setValue((prev) => prev + (transcript.text ?? ""));
   }, [transcript.text]);
 
   const handleStartRecording = () => {
@@ -72,7 +66,7 @@ export default function VoiceInputBox({
     stopRecording();
   };
 
-  const { countDown, start, stop, isStart } = useCountdown(10, {
+  const { countDown, start, stop, isStart } = useCountdown(30, {
     autoStart: false,
     onEnd,
   });
@@ -114,34 +108,35 @@ export default function VoiceInputBox({
               className="w-full h-full bg-transparent resize-none px-4 py-2 border border-dashed rounded outline-none ring-slate-300 focus:ring disabled:opacity-50"
               ref={textAreaRef}
               onKeyDown={handleEnter}
-              disabled={recording}
+              disabled={recording || transcribing || speaking}
               autoFocus={false}
               rows={3}
-              defaultValue={transcript.text}
               value={value}
               onChange={handleChange}
+              spellCheck={true}
+              lang="en"
               placeholder={isLoading ? "Waiting for response..." : ""}
             />
           </p>
           <div className="flex justify-left py-2">
             <p className="flex items-center mr-8">
-              <span className="text-slate-400 mr-2">Speaking:</span>
+              <span className="text-slate-500 mr-2">Speaking:</span>
               {speaking ? (
-                <IconButton>
+                <IconButton className="text-red-500">
                   <LoadbarSound />
                 </IconButton>
               ) : (
-                <span>None</span>
+                <span className="text-slate-300">None</span>
               )}
             </p>
             <p className="flex items-center">
-              <span className="text-slate-400 mr-2">Transcribing:</span>
+              <span className="text-slate-500 mr-2">Transcribing:</span>
               {transcribing ? (
                 <IconButton>
-                  <LoadbarDoc />
+                  <LoadingDots color="#f00" />
                 </IconButton>
               ) : (
-                <span>None</span>
+                <span className="text-slate-300">None</span>
               )}
             </p>
           </div>
@@ -160,7 +155,11 @@ export default function VoiceInputBox({
                 {recording ? <EarIcon /> : <MicIcon />}
               </IconButton>
               {countDown > 0 && isStart ? (
-                <div className="text-right text-xs px-1">
+                <div
+                  className={`text-right text-xs px-1 ${
+                    countDown < 5 ? "text-red-500" : ""
+                  }`}
+                >
                   {m}:{s}
                 </div>
               ) : null}
