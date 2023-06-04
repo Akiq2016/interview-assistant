@@ -7,6 +7,7 @@ import { useCountdown, format } from "@/hooks/useCountdown";
 import { useAutosizeTextArea } from "@/hooks/useAutosizeTextArea";
 
 const onTranscribe = async (blob: Blob) => {
+  console.log("----", "onTranscribe");
   const file = new File([blob], "speech.mp3", { type: "audio/mpeg" });
 
   const body = new FormData();
@@ -63,6 +64,7 @@ export default function VoiceInputBox({
     start();
   };
   const onEnd = () => {
+    if (!recording) return;
     stopRecording();
   };
 
@@ -154,7 +156,7 @@ export default function VoiceInputBox({
               <IconButton onClick={handleStartRecording}>
                 {recording ? <EarIcon /> : <MicIcon />}
               </IconButton>
-              {countDown > 0 && isStart ? (
+              {countDown > 0 && isStart && recording ? (
                 <div
                   className={`text-right text-xs px-1 ${
                     countDown < 5 ? "text-red-500" : ""
