@@ -15,7 +15,7 @@ import {
   InterviewStatus,
   Message,
 } from "@/types/interview";
-import { SendIcon } from "@/components/Icons";
+import { SendIcon, RobotIcon, UserIcon } from "@/components/Icons";
 import LoadingDots from "@/components/LoadingDots";
 import VoiceInputBox from "@/components/VoiceInputBox";
 import {
@@ -123,14 +123,8 @@ export default function Home() {
 
   /** Handle form submission */
   const handleSubmit = useCallback(
-    async (e?: any) => {
-      e?.preventDefault();
+    async (query?: string) => {
       setError(null);
-
-      let query: string | null = null;
-      if (textAreaRef.current?.value) {
-        query = textAreaRef.current.value;
-      }
 
       const data:
         | InterviewReqBodyEnd
@@ -151,10 +145,6 @@ export default function Home() {
           (data as InterviewReqBodyInterviewing).human,
           "userMessage"
         );
-
-        if (textAreaRef.current) {
-          textAreaRef.current.value = "";
-        }
       } else if (interviewStatus === InterviewStatus["start"]) {
         (data as InterviewReqBodyStart).status = interviewStatus;
         (data as InterviewReqBodyInterviewing).interviewStep = interviewStep;
@@ -231,35 +221,23 @@ export default function Home() {
     <main className={styles.main}>
       {interviewStatus !== InterviewStatus["start"] ? (
         <>
-          <div className={styles.cloud}>
+          <div className={`${styles.cloud} border-slate-300`}>
             <div ref={messageListRef} className={styles.messagelist}>
               {messageList.map((message, index) => {
                 let icon;
                 let className;
                 if (message.type === "apiMessage") {
                   icon = (
-                    <Image
-                      key={index}
-                      src="/bot-image.png"
-                      alt="AI"
-                      width="40"
-                      height="40"
-                      className={styles.boticon}
-                      priority
-                    />
+                    <div className="flex justify-center items-center w-10 h-10 mr-4">
+                      <RobotIcon />
+                    </div>
                   );
                   className = styles.apimessage;
                 } else {
                   icon = (
-                    <Image
-                      key={index}
-                      src="/usericon.png"
-                      alt="Me"
-                      width="30"
-                      height="30"
-                      className={styles.usericon}
-                      priority
-                    />
+                    <div className="flex justify-center items-center w-10 h-10 mr-4">
+                      <UserIcon />
+                    </div>
                   );
                   // The latest message sent by the user will be animated while waiting for a response
                   className =
@@ -281,13 +259,13 @@ export default function Home() {
             </div>
           </div>
 
-          <div className={styles.center}>
-            <div className={styles.cloudform}>
-              <form onSubmit={handleSubmit}>
+          <div className={`${styles.center} w-full`}>
+            <div className={`${styles.cloudform} w-full`}>
+              <form onSubmit={(e) => e.preventDefault()}>
                 {interviewStatus === InterviewStatus["interviewing"] && (
                   <>
                     {/* aki todo: maxLength */}
-                    <textarea
+                    {/* <textarea
                       disabled={loading}
                       onKeyDown={handleEnter}
                       ref={textAreaRef}
@@ -311,7 +289,9 @@ export default function Home() {
                         // Send icon SVG in input field
                         <SendIcon />
                       )}
-                    </button>
+                    </button> */}
+
+                    <VoiceInputBox isLoading={loading} onSend={handleSubmit} />
                   </>
                 )}
                 {interviewStatus === InterviewStatus["end"] && (
@@ -330,7 +310,10 @@ export default function Home() {
       ) : (
         <form
           ref={preConditionFormRef}
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
           className={styles.preCondition}
         >
           <h2>
@@ -379,8 +362,6 @@ export default function Home() {
           <p className="text-red-500">{error}</p>
         </div>
       )}
-
-      <VoiceInputBox />
     </main>
   );
 }
