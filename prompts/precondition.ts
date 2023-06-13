@@ -9,9 +9,11 @@ export const askingArt = `While asking questions, please keep the following in m
 2. Note that only one question should be asked per conversation.
 3. Not allowed to ask repetitive questions
 4. Avoid generic "either/or" questions comparing technologies or open-ended questions about personal preferences, for example:
-   - React vs Vue? // Avoid
-   - Can you describe your experience with Express, Adonis, and Scrapy? // Avoid
-   - How did you address performance issues rendering long lists on initial load? // Better
+   <example>
+   1. React vs Vue? // Avoid
+   2. Can you describe your experience with Express, Adonis, and Scrapy? // Avoid
+   3. How did you address performance issues rendering long lists on initial load? // Better
+   </example>
 5. Keep all questions concise and maintain a polite, professional tone.
 6. Focus questions on specific experiences, concrete projects, and quantifiable impacts.
 `;

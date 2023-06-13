@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "redis";
 import { ChatAnthropic } from "langchain/chat_models/anthropic";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { RedisChatMessageHistory } from "langchain/stores/message/redis";
@@ -22,11 +23,12 @@ import {
   startNextQuestion,
 } from "@/prompts/followUp";
 
-const chat = new ChatAnthropic({
-  modelName: "claude-instant-v1",
-  temperature: 0,
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-});
+// const chat = new ChatAnthropic({
+//   modelName: "claude-instant-v1",
+//   temperature: 0,
+//   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+// });
+const chat = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 1 });
 
 const client = createClient({
   url: process.env.REDIS_URL ?? "redis://localhost:6379",
